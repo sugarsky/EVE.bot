@@ -236,28 +236,27 @@ def main():
                 sleep(60)
 
             script_open_encounters()
-            pyautogui.click(coordinates['click_news'])
             sleep(2)
 
             # Цикл принятия миссий
             while True:
                 if status['system'] == 'Erzoh':
                     print(f"Так, мы в системе {status['system']}.")
-                    status['0j-enc'] += choose_mission(0, 6)
+                    choose_mission(0, 6)
                     frame_set = makeScreenshot()
                     if not check_frame(frame_set, 'refresh_timer', conf=0.9):
-                        pyautogui.click(coordinates['click_refresh'])
+                        click(coordinates['click_refresh'])
                         status['refresh'] = time()
                         sleep(3)
-                        status['0j-enc'] += choose_mission(0, 6)
+                        choose_mission(0, 6)
                     
-                    pyautogui.click(coordinates['click_journal'])
+                    sleep(2)
+                    click(coordinates['click_journal'])
                     sleep(2)
 
                     if not check_pixel(coordinates['new_mission'], colors['new_mission']):
                         print("Миссии кончились...")
-                        status['0j-enc'] = 0
-                        pyautogui.click(coordinates['click_news_back'])
+                        click(coordinates['click_news_back'])
                         print("Беру миссии в 2 прыжках.")
                         status['2j-enc'] = choose_mission(2, 6)
 
@@ -267,43 +266,42 @@ def main():
                                 sleep(20)
                                 frame_set = makeScreenshot()
                                 if not correlate(frame_set, 'refresh_timer', conf=0.9):
-                                    pyautogui.click(coordinates['click_refresh'])
+                                    click(coordinates['click_refresh'])
                                     status['refresh'] = time()
                                     break
                             continue
                         else:
                             print("Миссии в 2 прыжках есть, лечу выполнять.")
-                            status['system'] == 'Chemilip'
-                            pyautogui.click(coordinates['click_journal'])
+                            status['system'] = 'Chemilip'
+                            click(coordinates['click_journal'])
                             sleep(2)
                     break
 
                 elif status['system'] == 'Chemilip':
                     print(f"Так, мы в системе {status['system']}.")
-                    pyautogui.click(coordinates['click_journal'])
+                    click(coordinates['click_journal'])
                     sleep(2)
                     if not check_pixel(coordinates['new_mission'], colors['new_mission']):
                         print("Миссии кончились... Лечу домой.")
                         script_warp_home()
                         script_open_encounters()
-                        pyautogui.click(coordinates['click_news'])
                         sleep(2)
                         status['system'] = 'Erzoh'
                         continue
                     break
 
-            pyautogui.click(coordinates['new_mission'])
-            sleep(1)
-            pyautogui.click(coordinates['mission_accept'])
+            click(coordinates['new_mission'])
+            sleep(2)
+            click(coordinates['mission_accept'])
             sleep(2)
             script_end_mission(8)
-            pyautogui.click(coordinates['click_confirm'])
+            click(coordinates['click_confirm'])
             sleep(6)
             while True:
                 frame_set = makeScreenshot()
                 confirm = check_frame(frame_set, 'confirm', conf=0.9)
                 if confirm:
-                    pyautogui.click(coordinates['click_confirm'])
+                    click(coordinates['click_confirm'])
                     break
                 sleep(10)
 
@@ -343,52 +341,59 @@ def correlate(frame_set, frame_name, conf=0.5):
         'needles', 
         'needle_' + frame_name +'.png'
     )
-    image_pos = pyautogui.locate(needle_path, frame_set[frame_name], confidence=0.5)
+    image_pos = pyautogui.locate(needle_path, frame_set[frame_name], confidence=conf)
     return image_pos
+
+def click(coord):
+    x, y = coord
+    x0, y0 = pyautogui.position()
+    pyautogui.moveTo(x, y, duration=0)
+    pyautogui.click(coord)
+    pyautogui.moveTo(x0, y0, duration=0)
 
 def clicksleep(coords, times):
     for i in range(times):
         sleep(1)
-        pyautogui.click(coords)
+        click(coords)
 
 def script_open_menu():
     print("Открываю список врагов!")
-    pyautogui.click(coordinates['click_eye'])
+    click(coordinates['click_eye'])
     sleep(1)
-    pyautogui.click(coordinates['click_filters'])
+    click(coordinates['click_filters'])
     sleep(1)
-    pyautogui.click(coordinates['click_combat'])
+    click(coordinates['click_combat'])
     sleep(1)
     print("Список открыт!")
 
 def script_target_all():
     print('Вижу цели! Выжидаю...')
     sleep(settings['before_targeting'])
-    pyautogui.click(coordinates['click_target_all'])
+    click(coordinates['click_target_all'])
     print('Прицеливаюсь...')
     sleep(settings['after_targeting'])
 
 def script_target_1():
     print('Выбираю самую резвую!')
-    pyautogui.click(coordinates['click_target_1'])
+    click(coordinates['click_target_1'])
     sleep(2)
-    pyautogui.click(coordinates['click_target_1_off'])
+    click(coordinates['click_target_1_off'])
     sleep(1)
     print('Готов вести огонь!')
 
 def script_activate(coords):
-    pyautogui.click(coords)
+    click(coords)
     sleep(1)
 
 def script_evacuate():
     print('БЕЖИМ!')
-    pyautogui.click(coordinates['click_filters'])
+    click(coordinates['click_filters'])
     sleep(2)
-    pyautogui.click(coordinates['click_structures'])
+    click(coordinates['click_structures'])
     sleep(1)
-    pyautogui.click(coordinates['click_target_1'])
+    click(coordinates['click_target_1'])
     sleep(1)
-    pyautogui.click(coordinates['click_dock'])
+    click(coordinates['click_dock'])
     sleep(1)
     print('Направляюсь в док!')
 
@@ -398,22 +403,22 @@ def script_end_mission(times):
 
 def script_open_encounters():
     sleep(1)
-    pyautogui.click(coordinates['click_char'])
+    click(coordinates['click_char'])
     sleep(2)
-    pyautogui.click(coordinates['click_encounters'])
-    sleep(1)
-    pyautogui.click(coordinates['click_news'])
-    sleep(1)
+    click(coordinates['click_encounters'])
+    sleep(3)
+    click(coordinates['click_news'])
+    sleep(2)
 
 def script_warp_home():
     sleep(2)
-    pyautogui.click(coordinates['click_esc_enc'])
+    click(coordinates['click_esc_enc'])
     sleep(3)
-    pyautogui.click(coordinates['click_bookmarks'])
+    click(coordinates['click_bookmarks'])
     sleep(2)
-    pyautogui.click(coordinates['click_jump_1'])
+    click(coordinates['click_jump_1'])
     sleep(3)
-    pyautogui.click(coordinates['click_esc_bookmarks'])
+    click(coordinates['click_esc_bookmarks'])
     sleep(240)
 
 def choose_mission(jumps, times):
@@ -428,9 +433,9 @@ def choose_mission(jumps, times):
         )
         mission = pyautogui.locate(needle_path, frame_set['scr_main'], confidence=0.98)
         if mission:
-            pyautogui.click(pyautogui.center(mission))
+            click(pyautogui.center(mission))
             sleep(2)
-            pyautogui.click(coordinates['mission_accept'])
+            click(coordinates['mission_accept'])
             sleep(2)
             count += 1
     return count
