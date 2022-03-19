@@ -10,7 +10,7 @@ frames = {
 }
 
 def makeScreenshot(path='shots/'):
-    scr_main = pyautogui.screenshot(path + 'main_mission_2j.png')
+    scr_main = pyautogui.screenshot(path + 'main_mission_end.png')
 
     for index, coords in frames.items():
         scr = scr_main.crop(coords)

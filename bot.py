@@ -11,7 +11,9 @@ settings = {
 frames = {
     'open_menu': (2344, 772, 2402, 808),
     'target_all': (1547, 880, 1576, 910),
-    'attack': (1537, 1215, 1570, 1250),
+    'attack': (1537, 1215, 1570, 1250), # 33x35
+    'attack2': (2145, 1215, 2180, 1250), # 33x35
+    'attack3': (2295, 1215, 2333, 1250), # 33x35
     'enemies': (2385, 175, 2405, 205),
     'mission_end': (350, 500, 450, 528),
     'refresh_timer': (1519, 294, 1560, 326),
@@ -54,6 +56,15 @@ colors = {
     'activated_2': (255, 255, 255),
     'capacitor': (255, 255, 220),
     'new_mission': (206, 206, 206)
+}
+
+checks = {
+    'atk_bonus': 'pixel',
+    'addon': 'pixel',
+    'shield': 'pixel',
+    'attack': 'frame',
+    'attack2': 'frame',
+    'attack3': 'frame',
 }
 
 slots = {
@@ -99,6 +110,13 @@ slots = {
         'click': (2363, 1125),
         'last_act': None
     },
+    7: {
+        'name': 'attack',
+        'status': False,
+        'check': (1610, 1225),
+        'click': (1610, 1275),
+        'last_act': None
+    },
     8: {
         'name': 'addon',
         'status': False,
@@ -120,13 +138,26 @@ slots = {
         'click': (2065, 1275),
         'last_act': None
     },
+    11: {
+        'name': 'attack2',
+        'status': False,
+        'check': (2220, 1225),
+        'click': (2220, 1275),
+        'last_act': None
+    },
+    12: {
+        'name': 'attack3',
+        'status': False,
+        'check': (2380, 1225),
+        'click': (2380, 1275),
+        'last_act': None
+    },
 }
 
 status = {
     'open_menu': False,
     'enemies': False,
     'target_all': False,
-    'attack': False,
     'shield_damage': False,
     'armor_damage': False,
     'cap_60': True,
@@ -151,7 +182,6 @@ def main():
         status['open_menu'] = check_frame(frame_set, 'open_menu')
         status['enemies'] = check_frame(frame_set, 'enemies', conf=0.9)
         status['target_all'] = check_frame(frame_set, 'target_all')
-        status['attack'] = check_frame(frame_set, 'attack')
 
         status['shield_damage'] = check_pixel(coordinates['check_shield'], colors['damage'])
         status['armor_damage'] = check_pixel(coordinates['check_armor'], colors['damage'])
@@ -159,14 +189,20 @@ def main():
         status['cap_30'] = check_pixel(coordinates['cap_30'], colors['capacitor'])
  
         for index, value in slots.items():
-            value['status'] = check_pixel(value['check'], colors['activated_1']) or check_pixel(value['check'], colors['activated_2'])
+            if checks[value['name']] == 'pixel':
+                value['status'] = check_pixel(value['check'], colors['activated_1']) or check_pixel(value['check'], colors['activated_2'])
+            elif checks[value['name']] == 'frame':
+                value['status'] = check_frame(frame_set, value['name'])
         
         # Подтверждение, что модуль действительно выключен
         sleep(2)
         frame_set = makeScreenshot()
         for index, value in slots.items():
             if not value['status']:
-                value['status'] = check_pixel(value['check'], colors['activated_1']) or check_pixel(value['check'], colors['activated_2'])
+                if checks[value['name']] == 'pixel':
+                    value['status'] = check_pixel(value['check'], colors['activated_1']) or check_pixel(value['check'], colors['activated_2'])
+                elif checks[value['name']] == 'frame':
+                    value['status'] = check_frame(frame_set, value['name'])
 
         # Действия на основании status
         # Озвучиваем изменение статуса боя
@@ -185,14 +221,20 @@ def main():
             script_target_1()
 
         # Атакуем дронами
-        if status['enemies'] and status['attack'] == False:
-            print("Кажется, дроны не атакуют...")
-            sleep(2)
-            frame_set = makeScreenshot()
-            status['attack'] = check_frame(frame_set, 'attack')
-            if status['attack'] == False:
-                print("Отправляю дронов в атаку!")
-                script_activate(coordinates['click_attack'])
+        if status['enemies']:
+            for index, value in slots.items():
+                if checks[value['name']] == 'frame' and not value['status']:
+                    print("Отправляю дронов в атаку!")
+                    script_activate(value['click'])
+
+        # if status['enemies'] and status['attack'] == False:
+        #     print("Кажется, дроны не атакуют...")
+        #     sleep(2)
+        #     frame_set = makeScreenshot()
+        #     status['attack'] = check_frame(frame_set, 'attack')
+        #     if status['attack'] == False:
+        #         print("Отправляю дронов в атаку!")
+        #         script_activate(coordinates['click_attack'])
         
         # Эвакуация, если урон в броню
         if status['armor_damage'] and status['enemies']:
